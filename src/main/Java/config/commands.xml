@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CommandSs">
+    <select id="command" parameterType="bean.Message"  resultMap="CommandMaps">
+        SELECT a.ID S,a.NAME,a.DESCRIPTION,b.ID,b.CONTENT,b.COMMAND_ID
+        FROM command a LEFT JOIN command_contend b
+        ON a.ID=b.COMMAND_ID
+        <where>
+            <if test="name != null and !&quot;&quot;.equals(name.trim())">
+                and COMMAND=#{command}
+            </if>
+            <if test="description!=null and !&quot;&quot;.equals(description.trim())">
+                and DESCRIPTION like '%' #{description} '%'
+            </if>
+        </where>
+    </select>
+    <resultMap id="CommandMaps" type="bean.Command">
+        <id column="S" jdbcType="INTEGER" property="id"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <collection property="contendlist" resultMap="CommandContends.Contend"/>
+    </resultMap>
+</mapper>
+

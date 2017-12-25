@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="Message">
+
+    <resultMap id="MessageResult" type="bean.Message">
+        <id column="ID" jdbcType="INTEGER" property="id"/>
+        <result column="COMMAND" jdbcType="VARCHAR" property="command"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <result column="CONTENT" jdbcType="VARCHAR" property="content"/>
+    </resultMap>
+    <delete id="deleteOne" parameterType="String">
+    DELETE FROM command WHERE ID= #{id}
+</delete>
+    <delete id="deleteContent" parameterType="String">
+        DELETE FROM command_contend WHERE ID= #{id}
+    </delete>
+    <delete id="deleteBatch" parameterType="list">
+        DELETE FROM command WHERE ID IN
+        <foreach collection="list" separator="," item="ids" open="(" close=")">
+            ${ids}
+        </foreach>
+    </delete>
+    <insert id="insertOne" parameterType="bean.Command" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO command(NAME ,DESCRIPTION) VALUES
+	(#{name},#{description});
+    </insert>
+    <insert id="insertContend" parameterType="list">
+        INSERT INTO command_contend (CONTENT,COMMANDID) VALUES
+        <foreach collection="list" item="commandContendList" separator=",">
+            (#{commandContendList.contend},#{commandContendList.command_id})
+        </foreach>
+    </insert>
+    <update id="update" parameterType="bean.Command">
+UPDATE command
+	SET
+	NAME = #{name} ,
+	DESCRIPTION = #{description}
+	WHERE
+	ID = #{id} ;
+    </update>
+    <insert id="updateInsert" parameterType="list">
+        INSERT INTO command_contend(
+	CONTENT,COMMANDID
+	)
+    VALUES
+	<foreach collection="list" item="contendList" separator=",">
+	(
+	#{contendList.contend},#{contendList.command_id}
+	)
+    </foreach>
+    </insert>
+
+
+    <select id="Commands" parameterType="bean.Command"  resultMap="CommandMaps">
+        SELECT a.ID S,a.NAME,a.DESCRIPTION,b.ID,b.CONTENT,b.COMMANDID
+        FROM command a LEFT JOIN command_contend b
+        ON a.ID=b.COMMANDID
+        <where>
+            <if test="name != null and !&quot;&quot;.equals(name.trim())">
+                and NAME =#{name}
+            </if>
+            <if test="description!=null and !&quot;&quot;.equals(description.trim())">
+                and DESCRIPTION like '%' #{description} '%'
+            </if>
+            <if test="id!=null">
+                and a.ID=#{id}
+            </if>
+        </where>
+    </select>
+    <resultMap id="CommandMaps" type="bean.Command">
+        <id column="S" jdbcType="INTEGER" property="id"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <collection property="contendlist" resultMap="Contend"/>
+    </resultMap>
+    <resultMap id="Contend" type="bean.CommandContend">
+        <id column="ID" jdbcType="INTEGER" property="id"/>
+        <result column="CONTENT" jdbcType="VARCHAR" property="contend"/>
+        <result column="COMMAND_ID" jdbcType="INTEGER" property="command_id"/>
+    </resultMap>
+</mapper>
+
+
+
